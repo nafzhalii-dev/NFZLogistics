@@ -1,0 +1,235 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 214 60% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 214 60% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 214 60% 10%;
+
+    --primary: 214 60% 10%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 58% 27%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 142 58% 27%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 142 58% 27%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 214 60% 10%;
+    --foreground: 0 0% 98%;
+    --card: 214 50% 14%;
+    --card-foreground: 0 0% 98%;
+    --popover: 214 50% 14%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 214 60% 10%;
+    --secondary: 142 58% 27%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 214 40% 18%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 142 58% 27%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 40% 22%;
+    --input: 214 40% 22%;
+    --ring: 142 58% 27%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", "IBM Plex Sans Arabic", sans-serif;
+  }
+
+  /* RTL language support */
+  [dir="rtl"] body,
+  [dir="rtl"] {
+    font-family: "IBM Plex Sans Arabic", "Inter", sans-serif;
+  }
+
+  [dir="ltr"] body,
+  [dir="ltr"] {
+    font-family: "Inter", "IBM Plex Sans Arabic", sans-serif;
+  }
+}
+
+@layer components {
+  /* Premium section spacing */
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Navy background sections */
+  .section-navy {
+    @apply bg-navy-900;
+  }
+
+  /* Green accent text */
+  .text-brand-green {
+    @apply text-sgreen-600;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply bg-sgreen-600 hover:bg-sgreen-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2 border border-white/20 backdrop-blur-sm;
+  }
+
+  .btn-navy {
+    @apply bg-navy-900 hover:bg-navy-800 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2;
+  }
+
+  .btn-outline-green {
+    @apply border-2 border-sgreen-600 text-sgreen-600 hover:bg-sgreen-600 hover:text-white font-semibold px-6 py-3 rounded-lg transition-all duration-200 inline-flex items-center gap-2;
+  }
+
+  /* Card styles */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  /* Service number */
+  .service-number {
+    @apply text-5xl font-bold text-sgreen-600/20 font-sans leading-none;
+  }
+
+  /* Status badge */
+  .badge-status {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  /* Form input */
+  .form-input {
+    @apply w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sgreen-600/30 focus:border-sgreen-600 transition-all duration-200 bg-white text-navy-900;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-navy-900 mb-1.5;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-sgreen-600 to-sgreen-400 bg-clip-text text-transparent;
+  }
+
+  /* Timeline */
+  .timeline-line {
+    @apply absolute top-5 left-5 w-0.5 h-full bg-gray-200;
+  }
+
+  [dir="rtl"] .timeline-line {
+    @apply left-auto right-5;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B6B3A;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #155430;
+}
+
+/* Animations */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* RTL specific adjustments */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .rtl-text-right {
+  text-align: right;
+}
+
+/* WhatsApp float button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+}
+
+[dir="rtl"] .whatsapp-float {
+  right: auto;
+  left: 24px;
+}
+
+/* Premium section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+/* Tracking timeline */
+.tracking-step {
+  @apply flex items-start gap-4;
+}
+
+.tracking-step-dot {
+  @apply w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10;
+}
+
+/* Stats counter animation */
+@keyframes counter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-animate {
+  animation: counter 0.8s ease-out forwards;
+}
