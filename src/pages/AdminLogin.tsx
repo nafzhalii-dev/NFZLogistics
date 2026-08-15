@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useLocation, Navigate, Link } from "react-router-dom";
-import { Package, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import SEO from "@/components/seo/SEO";
+import { company } from "@/config/company";
+import logo from "@/assets/logo.png";
 
 interface LocationState {
   from?: { pathname: string };
@@ -78,8 +80,8 @@ export default function AdminLogin() {
       <SEO title="Admin Login" description="Sign in to the NFZ Logistics admin dashboard." noindex />
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <Link to="/" className="w-12 h-12 bg-sgreen-600 rounded-xl flex items-center justify-center mb-3">
-            <Package className="w-6 h-6 text-white" />
+          <Link to="/" className="mb-3">
+            <img src={logo} alt={company.nameEn} className="h-12 w-auto object-contain" />
           </Link>
           <h1 className="font-bold text-navy-900 text-xl">NFZ Admin</h1>
           <p className="text-gray-400 text-sm mt-1">Sign in to the logistics dashboard</p>

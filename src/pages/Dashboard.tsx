@@ -12,6 +12,8 @@ import { useShipments } from "@/hooks/useShipments";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 import SEO from "@/components/seo/SEO";
+import { company } from "@/config/company";
+import logo from "@/assets/logo.png";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
 } from "recharts";
@@ -341,9 +343,7 @@ export default function Dashboard() {
       )}>
         <div className="p-5 border-b border-white/10">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-sgreen-600 rounded-lg flex items-center justify-center">
-              <Package className="w-5 h-5 text-white" />
-            </div>
+            <img src={logo} alt={company.nameEn} className="h-9 w-auto object-contain" />
             <div>
               <div className="text-white font-bold text-base leading-none">NFZ Admin</div>
               <div className="text-sgreen-400 text-xs">Logistics Dashboard</div>

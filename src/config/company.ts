@@ -26,12 +26,9 @@ export interface Company {
   nameAr: string;
   nameEn: string;
   /**
-   * The current Navbar/Footer "logo" is a two-line text lockup (bold short
-   * name + smaller suffix beside an icon badge), not an image file — these
-   * two fields are exactly what's rendered today. A real logo image asset
-   * exists at src/assets/logo.png but is not wired into any component; that
-   * is a pre-existing, separate issue and intentionally left untouched by
-   * this refactor (see final report).
+   * Navbar/Footer/Dashboard/AdminLogin render the icon mark from
+   * src/assets/logo.png beside this two-line text lockup (bold short name +
+   * smaller suffix) — these two fields are exactly what's rendered today.
    */
   brandShort: string;
   brandSuffix: string;

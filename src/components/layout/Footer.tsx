@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { Package, Phone, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
+import { Phone, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { services } from "@/data/services";
 import { company } from "@/config/company";
+import logo from "@/assets/logo.png";
 
 export default function Footer() {
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -47,9 +48,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6 group w-fit">
-              <div className="w-10 h-10 bg-sgreen-600 rounded-lg flex items-center justify-center">
-                <Package className="w-6 h-6 text-white" />
-              </div>
+              <img src={logo} alt={company.nameEn} className="h-10 w-auto object-contain" />
               <div className={isRTL ? "text-right" : "text-left"}>
                 <div className="text-white font-bold text-lg leading-none">{company.brandShort}</div>
                 <div className="text-sgreen-400 text-xs font-medium">{company.brandSuffix}</div>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ChevronDown, Package } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 import { services } from "@/data/services";
 import { company } from "@/config/company";
+import logo from "@/assets/logo.png";
 
 export default function Navbar() {
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -78,9 +79,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-sgreen-600 rounded-lg flex items-center justify-center group-hover:bg-sgreen-500 transition-colors">
-                <Package className="w-6 h-6 text-white" />
-              </div>
+              <img src={logo} alt={company.nameEn} className="h-10 w-auto object-contain" />
               <div className={isRTL ? "text-right" : "text-left"}>
                 <div className="text-white font-bold text-lg leading-none">{company.brandShort}</div>
                 <div className="text-sgreen-400 text-xs font-medium">{company.brandSuffix}</div>
