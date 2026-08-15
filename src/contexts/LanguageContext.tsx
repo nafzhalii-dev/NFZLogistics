@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useLayoutEffect, ReactNode } from "react";
 
 export type Language = "ar" | "en";
 
@@ -51,6 +51,7 @@ const translations: Record<Language, Record<string, string>> = {
     "track.current": "الموقع الحالي",
     "track.eta": "الوقت المتوقع للتسليم",
     "track.notfound": "لم يتم العثور على الشحنة. يرجى التحقق من الرقم والمحاولة مرة أخرى.",
+    "track.error": "تعذر الاتصال بخدمة التتبع. يرجى المحاولة مرة أخرى.",
     "track.s1": "الطلب مستلم",
     "track.s2": "تم الاستلام",
     "track.s3": "في المستودع",
@@ -328,6 +329,7 @@ const translations: Record<Language, Record<string, string>> = {
     "track.current": "Current Location",
     "track.eta": "Estimated Delivery",
     "track.notfound": "Shipment not found. Please verify the tracking number and try again.",
+    "track.error": "Couldn't reach the tracking service. Please try again.",
     "track.s1": "Order Received",
     "track.s2": "Picked Up",
     "track.s3": "At Distribution Center",
@@ -570,23 +572,51 @@ const translations: Record<Language, Record<string, string>> = {
   },
 };
 
+const LANG_STORAGE_KEY = "nfz_lang";
+
+function isValidLanguage(value: unknown): value is Language {
+  return value === "ar" || value === "en";
+}
+
+// Reads the saved preference synchronously so the very first render already
+// uses the correct language — no post-mount correction, no visible flash.
+// Falls back safely to Arabic if localStorage is unavailable (disabled,
+// private mode, etc.) or holds an unexpected/invalid value.
+function getInitialLanguage(): Language {
+  try {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    if (isValidLanguage(saved)) return saved;
+  } catch {
+    // localStorage unavailable — fall back to the default below.
+  }
+  return "ar";
+}
+
+function applyDocumentDirection(lang: Language) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("ar");
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
+
+  // Keep the document's lang/dir in sync with state. useLayoutEffect (not
+  // useEffect) runs before the browser paints, so this also covers the
+  // initial mount without a visible flash if the DOM's static lang/dir
+  // (set in index.html) ever needs to change to match a saved preference.
+  useLayoutEffect(() => {
+    applyDocumentDirection(language);
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("nfz_lang", lang);
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch {
+      // localStorage unavailable (disabled/private mode, quota, etc.) —
+      // the in-memory language state still updates correctly either way.
+    }
   };
-
-  useEffect(() => {
-    const saved = localStorage.getItem("nfz_lang") as Language | null;
-    const lang = saved || "ar";
-    setLanguageState(lang);
-    document.documentElement.lang = lang;
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-  }, []);
 
   const t = (key: string): string => {
     return translations[language][key] || key;

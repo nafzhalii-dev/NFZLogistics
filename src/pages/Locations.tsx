@@ -1,64 +1,16 @@
 import { MapPin, Phone, Mail, Clock, Building2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SEO from "@/components/seo/SEO";
 import CoverageMap from "@/components/features/CoverageMap";
 import CTASection from "@/components/features/CTASection";
-
-const OFFICES = [
-  {
-    typeKey: "loc.hq",
-    nameAr: "المقر الرئيسي - الرياض",
-    nameEn: "Head Office - Riyadh",
-    addressAr: "طريق الملك فهد، حي العليا، الرياض 12211",
-    addressEn: "King Fahad Road, Al Olaya District, Riyadh 12211",
-    phone: "+966 50 123 4567",
-    email: "riyadh@nfzlogistics.sa",
-    hoursAr: "الأحد – الخميس: ٩:٠٠ ص – ٦:٠٠ م",
-    hoursEn: "Sunday – Thursday: 9:00 AM – 6:00 PM",
-    isHQ: true,
-  },
-  {
-    typeKey: "loc.office",
-    nameAr: "مكتب جدة",
-    nameEn: "Jeddah Office",
-    addressAr: "طريق الملك عبدالعزيز، حي الروضة، جدة 23523",
-    addressEn: "King Abdulaziz Road, Al Rawdah District, Jeddah 23523",
-    phone: "+966 12 345 6789",
-    email: "jeddah@nfzlogistics.sa",
-    hoursAr: "الأحد – الخميس: ٩:٠٠ ص – ٦:٠٠ م",
-    hoursEn: "Sunday – Thursday: 9:00 AM – 6:00 PM",
-    isHQ: false,
-  },
-  {
-    typeKey: "loc.office",
-    nameAr: "مكتب الدمام",
-    nameEn: "Dammam Office",
-    addressAr: "طريق الملك فيصل، حي الشاطئ، الدمام 32241",
-    addressEn: "King Faisal Road, Al Shati District, Dammam 32241",
-    phone: "+966 13 456 7890",
-    email: "dammam@nfzlogistics.sa",
-    hoursAr: "الأحد – الخميس: ٩:٠٠ ص – ٦:٠٠ م",
-    hoursEn: "Sunday – Thursday: 9:00 AM – 6:00 PM",
-    isHQ: false,
-  },
-  {
-    typeKey: "loc.warehouse",
-    nameAr: "مستودع الرياض المركزي",
-    nameEn: "Riyadh Central Warehouse",
-    addressAr: "المنطقة الصناعية الثانية، الرياض",
-    addressEn: "Second Industrial Area, Riyadh",
-    phone: "+966 50 234 5678",
-    email: "warehouse.riyadh@nfzlogistics.sa",
-    hoursAr: "على مدار الأسبوع: ٧:٠٠ ص – ١٠:٠٠ م",
-    hoursEn: "7 Days: 7:00 AM – 10:00 PM",
-    isHQ: false,
-  },
-];
+import { branches } from "@/data/branches";
 
 export default function Locations() {
   const { t, language } = useLanguage();
 
   return (
     <>
+      <SEO title={t("loc.title")} description={t("loc.subtitle")} />
       <section className="bg-navy-900 pt-32 pb-16">
         <div className="container-custom text-center">
           <p className="text-sgreen-400 font-semibold text-sm uppercase tracking-wider mb-4">Locations</p>
@@ -70,7 +22,7 @@ export default function Locations() {
       <section className="section-padding bg-white">
         <div className="container-custom">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {OFFICES.map((office, i) => (
+            {branches.map((office, i) => (
               <div key={i} className={`bg-gray-50 rounded-2xl p-8 border ${office.isHQ ? "border-sgreen-600/20 bg-sgreen-600/5" : "border-gray-100"}`}>
                 <div className="flex items-start gap-4 mb-6">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${office.isHQ ? "bg-sgreen-600" : "bg-navy-900"}`}>

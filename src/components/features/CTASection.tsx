@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowLeft, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { company } from "@/config/company";
 
 export default function CTASection() {
   const { t, isRTL } = useLanguage();
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
-  const phone = "966501234567";
 
   return (
     <section className="section-padding bg-navy-gradient relative overflow-hidden">
@@ -29,7 +29,7 @@ export default function CTASection() {
             <ArrowIcon className="w-5 h-5" />
           </Link>
           <a
-            href={`https://wa.me/${phone}`}
+            href={`https://wa.me/${company.whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#25D366] hover:bg-[#20bc5a] text-white font-semibold px-8 py-4 rounded-xl transition-all hover:shadow-lg inline-flex items-center gap-2"

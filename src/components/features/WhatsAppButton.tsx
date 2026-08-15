@@ -1,14 +1,14 @@
 import { MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { company } from "@/config/company";
 
 export default function WhatsAppButton() {
   const { t } = useLanguage();
-  const phone = "966501234567";
   const message = encodeURIComponent(t("cta.whatsapp"));
 
   return (
     <a
-      href={`https://wa.me/${phone}?text=${message}`}
+      href={`https://wa.me/${company.whatsappNumber}?text=${message}`}
       target="_blank"
       rel="noopener noreferrer"
       className="whatsapp-float group"

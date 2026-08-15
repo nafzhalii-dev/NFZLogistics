@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Package, Phone, Mail, MapPin, Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { services } from "@/data/services";
+import { company } from "@/config/company";
 
 export default function Footer() {
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -11,13 +13,9 @@ export default function Footer() {
     { key: "nav.contact", href: "/contact" },
   ];
 
-  const serviceLinks = [
-    { key: "s1.name", href: "/services/land-transportation" },
-    { key: "s2.name", href: "/services/air-freight" },
-    { key: "s3.name", href: "/services/sea-freight" },
-    { key: "s4.name", href: "/services/warehousing" },
-    { key: "s5.name", href: "/services/customs-clearance" },
-  ];
+  // Derived from the canonical services list so this can never drift out of
+  // sync with the homepage/services page/service details again.
+  const serviceLinks = services.map((s) => ({ key: s.nameKey, href: `/services/${s.slug}` }));
 
   const resourceLinks = [
     { key: "footer.track", href: "/tracking" },
@@ -29,6 +27,17 @@ export default function Footer() {
     { key: "nav.privacy", href: "/privacy" },
     { key: "nav.terms", href: "/terms" },
   ];
+
+  // Only real, configured URLs are shown — company.social.* still defaults
+  // to "#" until real accounts exist, so no dead/fake social buttons render.
+  const socialIcons = (
+    [
+      { key: "twitter", href: company.social.twitter, label: "Twitter", Icon: Twitter },
+      { key: "linkedin", href: company.social.linkedin, label: "LinkedIn", Icon: Linkedin },
+      { key: "instagram", href: company.social.instagram, label: "Instagram", Icon: Instagram },
+      { key: "facebook", href: company.social.facebook, label: "Facebook", Icon: Facebook },
+    ]
+  ).filter((s) => s.href && s.href !== "#");
 
   return (
     <footer className="bg-navy-950 text-white">
@@ -42,8 +51,8 @@ export default function Footer() {
                 <Package className="w-6 h-6 text-white" />
               </div>
               <div className={isRTL ? "text-right" : "text-left"}>
-                <div className="text-white font-bold text-lg leading-none">NFZ</div>
-                <div className="text-sgreen-400 text-xs font-medium">Logistics</div>
+                <div className="text-white font-bold text-lg leading-none">{company.brandShort}</div>
+                <div className="text-sgreen-400 text-xs font-medium">{company.brandSuffix}</div>
               </div>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-xs">
@@ -53,15 +62,15 @@ export default function Footer() {
             <div className="space-y-3">
               <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-white/60 hover:text-white text-sm transition-colors">
                 <MapPin className="w-4 h-4 text-sgreen-500 flex-shrink-0" />
-                <span>{t("contact.hq_addr")}</span>
+                <span>{language === "ar" ? company.addressShortAr : company.addressShortEn}</span>
               </a>
-              <a href="tel:+966501234567" className="flex items-center gap-3 text-white/60 hover:text-white text-sm transition-colors">
+              <a href={company.phoneHref} className="flex items-center gap-3 text-white/60 hover:text-white text-sm transition-colors">
                 <Phone className="w-4 h-4 text-sgreen-500 flex-shrink-0" />
-                <span dir="ltr">+966 50 123 4567</span>
+                <span dir="ltr">{company.phone}</span>
               </a>
-              <a href="mailto:info@nfzlogistics.sa" className="flex items-center gap-3 text-white/60 hover:text-white text-sm transition-colors">
+              <a href={`mailto:${company.email}`} className="flex items-center gap-3 text-white/60 hover:text-white text-sm transition-colors">
                 <Mail className="w-4 h-4 text-sgreen-500 flex-shrink-0" />
-                <span>info@nfzlogistics.sa</span>
+                <span>{company.email}</span>
               </a>
             </div>
           </div>
@@ -126,7 +135,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <p className="text-white/40 text-sm">
-                © {new Date().getFullYear()} NFZ Logistics. {t("footer.rights")}.
+                © {new Date().getFullYear()} {company.nameEn}. {t("footer.rights")}.
               </p>
               {/* Language switch in footer */}
               <button
@@ -137,21 +146,18 @@ export default function Footer() {
               </button>
             </div>
 
-            {/* Social Links */}
-            <div className="flex items-center gap-3">
-              <a href="#" aria-label="Twitter" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-sgreen-600 flex items-center justify-center transition-colors">
-                <Twitter className="w-4 h-4 text-white/60" />
-              </a>
-              <a href="#" aria-label="LinkedIn" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-sgreen-600 flex items-center justify-center transition-colors">
-                <Linkedin className="w-4 h-4 text-white/60" />
-              </a>
-              <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-sgreen-600 flex items-center justify-center transition-colors">
-                <Instagram className="w-4 h-4 text-white/60" />
-              </a>
-              <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-lg bg-white/5 hover:bg-sgreen-600 flex items-center justify-center transition-colors">
-                <Facebook className="w-4 h-4 text-white/60" />
-              </a>
-            </div>
+            {/* Social Links — only rendered once a real URL replaces the
+                "#" placeholder in company.social, so no dead/fake social
+                buttons are shown until real accounts are configured. */}
+            {socialIcons.length > 0 && (
+              <div className="flex items-center gap-3">
+                {socialIcons.map(({ key, href, label, Icon }) => (
+                  <a key={key} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-sgreen-600 flex items-center justify-center transition-colors">
+                    <Icon className="w-4 h-4 text-white/60" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Developer Credit */}

@@ -1,17 +1,6 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, Store, Factory, Heart, UtensilsCrossed, HardHat, Building2, Cpu } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-const INDUSTRIES = [
-  { icon: ShoppingCart, nameKey: "ind.ecom", descKey: "ind.ecom.desc", img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop&auto=format" },
-  { icon: Store, nameKey: "ind.retail", descKey: "ind.retail.desc", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop&auto=format" },
-  { icon: Factory, nameKey: "ind.mfg", descKey: "ind.mfg.desc", img: "https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=400&h=300&fit=crop&auto=format" },
-  { icon: Heart, nameKey: "ind.health", descKey: "ind.health.desc", img: "https://images.unsplash.com/photo-1559757175-5700dde675bc?w=400&h=300&fit=crop&auto=format" },
-  { icon: UtensilsCrossed, nameKey: "ind.food", descKey: "ind.food.desc", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format" },
-  { icon: HardHat, nameKey: "ind.construction", descKey: "ind.construction.desc", img: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&h=300&fit=crop&auto=format" },
-  { icon: Building2, nameKey: "ind.gov", descKey: "ind.gov.desc", img: "https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?w=400&h=300&fit=crop&auto=format" },
-  { icon: Cpu, nameKey: "ind.tech", descKey: "ind.tech.desc", img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop&auto=format" },
-];
+import { industries } from "@/data/industries";
 
 export default function IndustriesSection() {
   const { t } = useLanguage();
@@ -26,7 +15,7 @@ export default function IndustriesSection() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {INDUSTRIES.map((ind) => {
+          {industries.map((ind) => {
             const Icon = ind.icon;
             return (
               <Link
@@ -35,7 +24,7 @@ export default function IndustriesSection() {
                 className="group relative rounded-2xl overflow-hidden aspect-[4/3] cursor-pointer"
               >
                 <img
-                  src={ind.img}
+                  src={ind.thumbImage}
                   alt={t(ind.nameKey)}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />

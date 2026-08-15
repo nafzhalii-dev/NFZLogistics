@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Package, Truck, CheckCircle, AlertCircle, Clock, Users, MapPin, Settings,
   BarChart3, Home, List, ArrowUpRight, ArrowDownRight, Bell, Menu, X,
-  Warehouse, FileText, Star, HelpCircle, Globe, ChevronRight, RefreshCw,
+  Warehouse, FileText, Star, HelpCircle, Globe, ChevronRight, RefreshCw, LogOut,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useShipments } from "@/hooks/useShipments";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
+import SEO from "@/components/seo/SEO";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
 } from "recharts";
@@ -19,17 +22,6 @@ import DriversPanel from "@/components/features/DriversPanel";
 import FleetPanel from "@/components/features/FleetPanel";
 import QuotesPanel from "@/components/features/QuotesPanel";
 import AnalyticsPanel from "@/components/features/AnalyticsPanel";
-
-const SHIPMENT_DATA = [
-  { day: "Sun", shipments: 42 }, { day: "Mon", shipments: 78 }, { day: "Tue", shipments: 65 },
-  { day: "Wed", shipments: 90 }, { day: "Thu", shipments: 55 }, { day: "Fri", shipments: 38 },
-  { day: "Sat", shipments: 20 },
-];
-const PERF_DATA = [
-  { month: "Jan", ontime: 96 }, { month: "Feb", ontime: 97 }, { month: "Mar", ontime: 95 },
-  { month: "Apr", ontime: 98 }, { month: "May", ontime: 97 }, { month: "Jun", ontime: 99 },
-  { month: "Jul", ontime: 98 },
-];
 
 type NavSection =
   | "Overview"
@@ -48,8 +40,10 @@ interface NavItem {
 }
 
 function OverviewPanel() {
-  const { stats, loading } = useDashboardStats();
+  const { language } = useLanguage();
+  const { stats, loading, error: statsError } = useDashboardStats();
   const { shipments, loading: sLoading, fetchShipments } = useShipments();
+  const { data: analytics, loading: analyticsLoading } = useAnalytics(7);
 
   const STATS_CARDS = [
     { icon: Package, label: "Total Shipments", value: stats.totalShipments, color: "bg-blue-500", up: true, change: "+12%" },
@@ -61,6 +55,46 @@ function OverviewPanel() {
     { icon: Truck, label: "Active Drivers", value: stats.totalDrivers, color: "bg-cyan-500", up: true, change: "" },
     { icon: Truck, label: "Vehicles", value: stats.activeVehicles, color: "bg-indigo-500", up: true, change: "" },
   ];
+
+  // ── Real, derived chart/widget data (no fabricated numbers) ────────────
+  const dailyVolume = analytics?.dailyVolume ?? [];
+  const shipmentsByDayData = dailyVolume.map((d) => ({ day: d.day, shipments: d.total }));
+  const hasShipmentVolumeData = dailyVolume.some((d) => d.total > 0);
+
+  const onTimeTrendData = dailyVolume.map((d) => ({
+    day: d.day,
+    ontime: d.total > 0 ? Math.round(((d.total - d.delayed) / d.total) * 100) : null,
+  }));
+  const hasOnTimeData = onTimeTrendData.some((d) => d.ontime !== null);
+
+  const cityPerformance = analytics?.cityPerformance ?? [];
+  const totalCityShipments = cityPerformance.reduce((sum, c) => sum + c.shipments, 0);
+  const topCities = cityPerformance.slice(0, 4).map((c) => ({
+    city: c.city,
+    count: c.shipments,
+    pct: totalCityShipments > 0 ? Math.round((c.shipments / totalCityShipments) * 100) : 0,
+  }));
+  const otherCitiesCount = totalCityShipments - topCities.reduce((sum, c) => sum + c.count, 0);
+  const regionalRows = otherCitiesCount > 0
+    ? [
+        ...topCities,
+        {
+          city: language === "ar" ? "مدن أخرى" : "Other Cities",
+          count: otherCitiesCount,
+          pct: Math.round((otherCitiesCount / totalCityShipments) * 100),
+        },
+      ]
+    : topCities;
+
+  const fleetRows = [
+    { label: language === "ar" ? "نشطة" : "Active", value: stats.vehiclesByStatus.active, color: "bg-sgreen-600" },
+    { label: language === "ar" ? "متاحة" : "Available", value: stats.vehiclesByStatus.available, color: "bg-blue-500" },
+    { label: language === "ar" ? "الصيانة" : "Maintenance", value: stats.vehiclesByStatus.maintenance, color: "bg-amber-500" },
+  ];
+
+  const periodLabel = language === "ar" ? "آخر 7 أيام" : "Last 7 days";
+  const noDataLabel = language === "ar" ? "لا توجد بيانات كافية لهذه الفترة" : "Not enough data for this period";
+  const errorLabel = language === "ar" ? "تعذر تحميل البيانات" : "Couldn't load this data";
 
   return (
     <div>
@@ -77,6 +111,13 @@ function OverviewPanel() {
           Refresh
         </button>
       </div>
+
+      {statsError && (
+        <div className="mb-6 flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{language === "ar" ? "تعذر تحميل إحصائيات لوحة التحكم." : "Couldn't load dashboard statistics."}</span>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4 mb-8">
@@ -110,29 +151,45 @@ function OverviewPanel() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-bold text-navy-900 mb-1">Shipments by Day</h3>
-          <p className="text-gray-400 text-xs mb-5">This week's shipment volume</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={SHIPMENT_DATA} barSize={28}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }} />
-              <Bar dataKey="shipments" fill="#1B6B3A" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <p className="text-gray-400 text-xs mb-5">{periodLabel}</p>
+          {analyticsLoading ? (
+            <div className="h-[180px] bg-gray-50 rounded-lg animate-pulse" />
+          ) : !analytics ? (
+            <div className="h-[180px] flex items-center justify-center text-sm text-gray-400 text-center px-4">{errorLabel}</div>
+          ) : !hasShipmentVolumeData ? (
+            <div className="h-[180px] flex items-center justify-center text-sm text-gray-400 text-center px-4">{noDataLabel}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart data={shipmentsByDayData} barSize={28}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }} />
+                <Bar dataKey="shipments" fill="#1B6B3A" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-bold text-navy-900 mb-1">On-Time Delivery Rate</h3>
-          <p className="text-gray-400 text-xs mb-5">Monthly performance (%)</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <LineChart data={PERF_DATA}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <YAxis domain={[90, 100]} tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }} />
-              <Line type="monotone" dataKey="ontime" stroke="#1B6B3A" strokeWidth={2.5} dot={{ r: 4, fill: "#1B6B3A" }} />
-            </LineChart>
-          </ResponsiveContainer>
+          <p className="text-gray-400 text-xs mb-5">{periodLabel}</p>
+          {analyticsLoading ? (
+            <div className="h-[180px] bg-gray-50 rounded-lg animate-pulse" />
+          ) : !analytics ? (
+            <div className="h-[180px] flex items-center justify-center text-sm text-gray-400 text-center px-4">{errorLabel}</div>
+          ) : !hasOnTimeData ? (
+            <div className="h-[180px] flex items-center justify-center text-sm text-gray-400 text-center px-4">{noDataLabel}</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={onTimeTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="day" tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }} />
+                <Line type="monotone" dataKey="ontime" stroke="#1B6B3A" strokeWidth={2.5} dot={{ r: 4, fill: "#1B6B3A" }} connectNulls={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 
@@ -140,44 +197,59 @@ function OverviewPanel() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-bold text-navy-900 mb-5">Fleet Status</h3>
-          <div className="space-y-4">
-            {[
-              { label: "Active Vehicles", value: 87, total: 120, color: "bg-sgreen-600" },
-              { label: "Available", value: 25, total: 120, color: "bg-blue-500" },
-              { label: "Maintenance", value: 8, total: 120, color: "bg-amber-500" },
-            ].map((fleet) => (
-              <div key={fleet.label}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-600">{fleet.label}</span>
-                  <span className="font-semibold text-navy-900">{fleet.value}</span>
+          {loading ? (
+            <div className="space-y-4">
+              {[0, 1, 2].map((i) => <div key={i} className="h-8 bg-gray-50 rounded animate-pulse" />)}
+            </div>
+          ) : statsError ? (
+            <div className="text-sm text-gray-400 py-6 text-center">{errorLabel}</div>
+          ) : stats.totalVehicles === 0 ? (
+            <div className="text-sm text-gray-400 py-6 text-center">
+              {language === "ar" ? "لا توجد مركبات مسجلة بعد" : "No vehicles recorded yet"}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {fleetRows.map((fleet) => (
+                <div key={fleet.label}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">{fleet.label}</span>
+                    <span className="font-semibold text-navy-900">{fleet.value} / {stats.totalVehicles}</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full ${fleet.color} rounded-full`} style={{ width: `${(fleet.value / stats.totalVehicles) * 100}%` }} />
+                  </div>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className={`h-full ${fleet.color} rounded-full`} style={{ width: `${(fleet.value / fleet.total) * 100}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <h3 className="font-bold text-navy-900 mb-5">Regional Distribution</h3>
-          <div className="space-y-3">
-            {[
-              { city: "Riyadh", count: 4821, pct: 38 },
-              { city: "Jeddah", count: 3240, pct: 25 },
-              { city: "Dammam", count: 2594, pct: 20 },
-              { city: "Other Cities", count: 2192, pct: 17 },
-            ].map((r) => (
-              <div key={r.city}>
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-gray-700 font-medium">{r.city}</span>
-                  <span className="text-gray-500">{r.count.toLocaleString()} · {r.pct}%</span>
+          {analyticsLoading ? (
+            <div className="space-y-3">
+              {[0, 1, 2, 3].map((i) => <div key={i} className="h-8 bg-gray-50 rounded animate-pulse" />)}
+            </div>
+          ) : !analytics ? (
+            <div className="text-sm text-gray-400 py-6 text-center">{errorLabel}</div>
+          ) : regionalRows.length === 0 ? (
+            <div className="text-sm text-gray-400 py-6 text-center">
+              {language === "ar" ? "لا توجد شحنات مسجلة بعد" : "No shipments recorded yet"}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {regionalRows.map((r) => (
+                <div key={r.city}>
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-700 font-medium">{r.city}</span>
+                    <span className="text-gray-500">{r.count.toLocaleString()} · {r.pct}%</span>
+                  </div>
+                  <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-navy-900 rounded-full" style={{ width: `${r.pct}%` }} />
+                  </div>
                 </div>
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-navy-900 rounded-full" style={{ width: `${r.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -226,9 +298,16 @@ function OverviewPanel() {
 
 export default function Dashboard() {
   const { language, setLanguage } = useLanguage();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeNav, setActiveNav] = useState<NavSection>("Overview");
   const { stats } = useDashboardStats();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/admin/login", { replace: true });
+  };
 
   const NAV_ITEMS: NavItem[] = [
     { icon: Home, label: "Overview", section: "Overview" },
@@ -254,6 +333,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans" dir="ltr">
+      <SEO title="Admin Dashboard" description="NFZ Logistics internal admin dashboard." noindex />
       {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-60 bg-navy-900 text-white flex flex-col transition-transform duration-300",
@@ -335,6 +415,20 @@ export default function Dashboard() {
                 </span>
               )}
             </div>
+            <div className="w-px h-6 bg-gray-200 hidden sm:block" />
+            {user?.email && (
+              <span className="text-gray-400 text-xs hidden md:block max-w-[160px] truncate" title={user.email}>
+                {user.email}
+              </span>
+            )}
+            <button
+              onClick={handleLogout}
+              aria-label="Log out"
+              className="flex items-center gap-1.5 text-gray-500 text-sm border border-gray-200 px-3 py-1.5 rounded-lg hover:border-red-300 hover:text-red-600 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
           </div>
         </header>
 

@@ -1,18 +1,8 @@
 import { Link } from "react-router-dom";
-import { Truck, Plane, Ship, Warehouse, FileCheck, MapPin, Zap, GitBranch, ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
-
-const SERVICES = [
-  { num: "01", icon: Truck, nameKey: "s1.name", descKey: "s1.desc", slug: "land-transportation", color: "bg-blue-500/10 text-blue-400" },
-  { num: "02", icon: Plane, nameKey: "s2.name", descKey: "s2.desc", slug: "air-freight", color: "bg-sky-500/10 text-sky-400" },
-  { num: "03", icon: Ship, nameKey: "s3.name", descKey: "s3.desc", slug: "sea-freight", color: "bg-cyan-500/10 text-cyan-400" },
-  { num: "04", icon: Warehouse, nameKey: "s4.name", descKey: "s4.desc", slug: "warehousing", color: "bg-violet-500/10 text-violet-400" },
-  { num: "05", icon: FileCheck, nameKey: "s5.name", descKey: "s5.desc", slug: "customs-clearance", color: "bg-amber-500/10 text-amber-400" },
-  { num: "06", icon: MapPin, nameKey: "s6.name", descKey: "s6.desc", slug: "last-mile-delivery", color: "bg-rose-500/10 text-rose-400" },
-  { num: "07", icon: Zap, nameKey: "s7.name", descKey: "s7.desc", slug: "express-delivery", color: "bg-orange-500/10 text-orange-400" },
-  { num: "08", icon: GitBranch, nameKey: "s8.name", descKey: "s8.desc", slug: "supply-chain", color: "bg-green-500/10 text-green-400" },
-];
+import { services } from "@/data/services";
 
 export default function ServicesSection() {
   const { t, isRTL } = useLanguage();
@@ -34,7 +24,7 @@ export default function ServicesSection() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {SERVICES.map((s) => {
+          {services.map((s) => {
             const Icon = s.icon;
             return (
               <Link

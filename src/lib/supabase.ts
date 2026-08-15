@@ -100,6 +100,19 @@ export interface ShipmentEvent {
   occurred_at: string;
 }
 
+export type ContactSubmissionStatus = "new" | "read" | "replied" | "archived";
+
+export interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  message: string;
+  status: ContactSubmissionStatus;
+  created_at: string;
+}
+
 export interface Quote {
   id: string;
   reference_number: string;

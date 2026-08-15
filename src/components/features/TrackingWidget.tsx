@@ -1,75 +1,16 @@
 import { useState } from "react";
-import { Search, Package, MapPin, CheckCircle, Circle, Clock, AlertCircle } from "lucide-react";
+import { Search, Package, CheckCircle, Circle, Clock, AlertCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTracking } from "@/hooks/useTracking";
 import { cn } from "@/lib/utils";
-
-const MOCK_SHIPMENTS: Record<string, {
-  number: string;
-  status: string;
-  origin_ar: string;
-  origin_en: string;
-  destination_ar: string;
-  destination_en: string;
-  current_ar: string;
-  current_en: string;
-  eta_ar: string;
-  eta_en: string;
-  step: number;
-}> = {
-  "NFZ-2026-458921": {
-    number: "NFZ-2026-458921",
-    status: "in_transit",
-    origin_ar: "الرياض",
-    origin_en: "Riyadh",
-    destination_ar: "جدة",
-    destination_en: "Jeddah",
-    current_ar: "مركز توزيع جدة",
-    current_en: "Jeddah Distribution Center",
-    eta_ar: "غداً",
-    eta_en: "Tomorrow",
-    step: 3,
-  },
-  "NFZ-2026-123456": {
-    number: "NFZ-2026-123456",
-    status: "delivered",
-    origin_ar: "الدمام",
-    origin_en: "Dammam",
-    destination_ar: "الرياض",
-    destination_en: "Riyadh",
-    current_ar: "تم التسليم",
-    current_en: "Delivered",
-    eta_ar: "تم التسليم",
-    eta_en: "Delivered",
-    step: 5,
-  },
-  "NFZ-2026-789012": {
-    number: "NFZ-2026-789012",
-    status: "out_delivery",
-    origin_ar: "جدة",
-    origin_en: "Jeddah",
-    destination_ar: "مكة المكرمة",
-    destination_en: "Makkah",
-    current_ar: "خرج للتسليم",
-    current_en: "Out for Delivery",
-    eta_ar: "اليوم",
-    eta_en: "Today",
-    step: 4,
-  },
-};
 
 export default function TrackingWidget() {
   const { t, language, isRTL } = useLanguage();
   const [trackingNum, setTrackingNum] = useState("");
-  const [result, setResult] = useState<(typeof MOCK_SHIPMENTS)[string] | null | "notfound">(null);
+  const { state, result, track } = useTracking();
 
-  const handleTrack = () => {
-    const key = trackingNum.trim().toUpperCase();
-    if (MOCK_SHIPMENTS[key]) {
-      setResult(MOCK_SHIPMENTS[key]);
-    } else {
-      setResult("notfound");
-    }
-  };
+  const handleTrack = () => track(trackingNum);
+  const loading = state === "loading";
 
   const steps = [
     { key: "track.s1" },
@@ -118,22 +59,27 @@ export default function TrackingWidget() {
               </div>
               <button
                 onClick={handleTrack}
-                className="bg-sgreen-600 hover:bg-sgreen-500 text-white font-semibold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:shadow-sgreen-600/30 flex items-center gap-2"
+                disabled={loading}
+                className="bg-sgreen-600 hover:bg-sgreen-500 text-white font-semibold px-8 py-4 rounded-xl transition-all hover:shadow-lg hover:shadow-sgreen-600/30 flex items-center gap-2 disabled:opacity-70 disabled:hover:shadow-none"
               >
-                <Search className="w-5 h-5" />
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
                 <span className="hidden sm:inline">{t("track.button")}</span>
               </button>
             </div>
             <p className="text-white/30 text-xs mt-2">{t("track.example")}</p>
 
             {/* Result */}
-            {result && result !== "notfound" && (
+            {state === "found" && result && (
               <div className="mt-6 bg-white rounded-xl p-6 animate-fade-up">
                 {/* Header */}
                 <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
                   <div>
                     <p className="text-gray-500 text-xs mb-1">{t("track.number")}</p>
-                    <p className="font-bold text-navy-900 font-mono text-lg">{result.number}</p>
+                    <p className="font-bold text-navy-900 font-mono text-lg">{result.trackingNumber}</p>
                   </div>
                   <span className={cn("badge-status text-sm font-semibold", statusColors[result.status] || "bg-gray-100 text-gray-600")}>
                     {t(`track.${result.status}`)}
@@ -143,10 +89,15 @@ export default function TrackingWidget() {
                 {/* Info grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
                   {[
-                    { label: t("track.origin"), value: language === "ar" ? result.origin_ar : result.origin_en },
-                    { label: t("track.destination"), value: language === "ar" ? result.destination_ar : result.destination_en },
-                    { label: t("track.current"), value: language === "ar" ? result.current_ar : result.current_en },
-                    { label: t("track.eta"), value: language === "ar" ? result.eta_ar : result.eta_en },
+                    { label: t("track.origin"), value: result.origin },
+                    { label: t("track.destination"), value: result.destination },
+                    { label: t("track.current"), value: result.currentLocation },
+                    {
+                      label: t("track.eta"),
+                      value: result.estimatedDelivery
+                        ? new Date(result.estimatedDelivery).toLocaleDateString(language === "ar" ? "ar-SA" : "en-US")
+                        : "—",
+                    },
                   ].map((info) => (
                     <div key={info.label}>
                       <p className="text-gray-400 text-xs mb-0.5">{info.label}</p>
@@ -200,10 +151,17 @@ export default function TrackingWidget() {
               </div>
             )}
 
-            {result === "notfound" && (
+            {state === "notfound" && (
               <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-5 flex items-center gap-3 animate-fade-up">
                 <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                 <p className="text-red-700 text-sm">{t("track.notfound")}</p>
+              </div>
+            )}
+
+            {state === "error" && (
+              <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-5 flex items-center gap-3 animate-fade-up">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-red-700 text-sm">{t("track.error")}</p>
               </div>
             )}
           </div>

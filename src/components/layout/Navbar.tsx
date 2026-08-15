@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import { services } from "@/data/services";
+import { company } from "@/config/company";
 
 export default function Navbar() {
   const { t, language, setLanguage, isRTL } = useLanguage();
@@ -10,6 +12,8 @@ export default function Navbar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const location = useLocation();
+  const servicesWrapperRef = useRef<HTMLDivElement>(null);
+  const servicesTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 20);
@@ -19,18 +23,34 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsMobileOpen(false);
+    setServicesOpen(false);
   }, [location.pathname]);
 
-  const services = [
-    { key: "s1.name", slug: "land-transportation" },
-    { key: "s2.name", slug: "air-freight" },
-    { key: "s3.name", slug: "sea-freight" },
-    { key: "s4.name", slug: "warehousing" },
-    { key: "s5.name", slug: "customs-clearance" },
-    { key: "s6.name", slug: "last-mile-delivery" },
-    { key: "s7.name", slug: "express-delivery" },
-    { key: "s8.name", slug: "supply-chain" },
-  ];
+  // Close the Services dropdown on outside click/tap or Escape, and return
+  // focus to the trigger on Escape. Only attached while the dropdown is
+  // open, and always cleaned up — no listener persists after close/unmount.
+  useEffect(() => {
+    if (!servicesOpen) return;
+
+    const handleOutsidePointer = (e: PointerEvent) => {
+      if (servicesWrapperRef.current && !servicesWrapperRef.current.contains(e.target as Node)) {
+        setServicesOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setServicesOpen(false);
+        servicesTriggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("pointerdown", handleOutsidePointer);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsidePointer);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [servicesOpen]);
 
   const navLinks = [
     { key: "nav.home", href: "/" },
@@ -62,8 +82,8 @@ export default function Navbar() {
                 <Package className="w-6 h-6 text-white" />
               </div>
               <div className={isRTL ? "text-right" : "text-left"}>
-                <div className="text-white font-bold text-lg leading-none">NFZ</div>
-                <div className="text-sgreen-400 text-xs font-medium">Logistics</div>
+                <div className="text-white font-bold text-lg leading-none">{company.brandShort}</div>
+                <div className="text-sgreen-400 text-xs font-medium">{company.brandSuffix}</div>
               </div>
             </Link>
 
@@ -85,10 +105,14 @@ export default function Navbar() {
               ))}
 
               {/* Services Dropdown */}
-              <div className="relative">
+              <div className="relative" ref={servicesWrapperRef}>
                 <button
-                  onMouseEnter={() => setServicesOpen(true)}
-                  onMouseLeave={() => setServicesOpen(false)}
+                  ref={servicesTriggerRef}
+                  type="button"
+                  onClick={() => setServicesOpen((open) => !open)}
+                  aria-haspopup="true"
+                  aria-expanded={servicesOpen}
+                  aria-controls="navbar-services-menu"
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1",
                     location.pathname.startsWith("/services")
@@ -101,8 +125,7 @@ export default function Navbar() {
                 </button>
                 {servicesOpen && (
                   <div
-                    onMouseEnter={() => setServicesOpen(true)}
-                    onMouseLeave={() => setServicesOpen(false)}
+                    id="navbar-services-menu"
                     className={cn(
                       "absolute top-full mt-1 w-56 bg-navy-900 border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in",
                       isRTL ? "right-0" : "left-0"
@@ -110,6 +133,7 @@ export default function Navbar() {
                   >
                     <Link
                       to="/services"
+                      onClick={() => setServicesOpen(false)}
                       className="block px-4 py-2 text-sm text-sgreen-400 font-semibold hover:bg-white/5"
                     >
                       {t("nav.services")} ←
@@ -119,9 +143,10 @@ export default function Navbar() {
                       <Link
                         key={s.slug}
                         to={`/services/${s.slug}`}
+                        onClick={() => setServicesOpen(false)}
                         className="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                       >
-                        {t(s.key)}
+                        {t(s.nameKey)}
                       </Link>
                     ))}
                   </div>

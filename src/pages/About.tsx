@@ -1,29 +1,24 @@
-import { Shield, Target, Eye, Users, Award, TrendingUp } from "lucide-react";
+import { Target, Eye } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SEO from "@/components/seo/SEO";
 import CTASection from "@/components/features/CTASection";
 import warehouseImg from "@/assets/warehouse.jpg";
-
-const VALUES = [
-  { icon: Shield, titleAr: "الموثوقية", titleEn: "Reliability", descAr: "نلتزم بوعودنا ونسعى دائماً لتجاوز توقعات عملائنا", descEn: "We honor our commitments and always strive to exceed client expectations" },
-  { icon: TrendingUp, titleAr: "الكفاءة", titleEn: "Efficiency", descAr: "نستخدم التقنية الحديثة لتحقيق أعلى مستويات الكفاءة التشغيلية", descEn: "We leverage modern technology to achieve the highest operational efficiency" },
-  { icon: Users, titleAr: "خدمة العملاء", titleEn: "Customer Service", descAr: "عملاؤنا في قلب كل قرار نتخذه وكل خدمة نقدمها", descEn: "Our clients are at the heart of every decision we make and every service we offer" },
-  { icon: Award, titleAr: "الجودة", titleEn: "Quality", descAr: "نلتزم بأعلى معايير الجودة في جميع عملياتنا وخدماتنا", descEn: "We maintain the highest quality standards across all our operations and services" },
-];
-
-const MILESTONES = [
-  { yearAr: "2010", yearEn: "2010", textAr: "تأسيس الشركة في الرياض", textEn: "Company founded in Riyadh" },
-  { yearAr: "2013", yearEn: "2013", textAr: "توسع العمليات لتشمل جدة والدمام", textEn: "Operations expanded to Jeddah and Dammam" },
-  { yearAr: "2016", yearEn: "2016", textAr: "إطلاق منصة التتبع الرقمية", textEn: "Launch of digital tracking platform" },
-  { yearAr: "2019", yearEn: "2019", textAr: "الوصول إلى 50 مدينة في المملكة", textEn: "Reached coverage of 50 cities in Saudi Arabia" },
-  { yearAr: "2022", yearEn: "2022", textAr: "شراكات لوجستية دولية وتوسع خليجي", textEn: "International logistics partnerships and GCC expansion" },
-  { yearAr: "2026", yearEn: "2026", textAr: "تجاوز 250,000 شحنة مسلّمة", textEn: "Surpassed 250,000 shipments delivered" },
-];
+import { values } from "@/data/values";
+import { milestones } from "@/data/milestones";
 
 export default function About() {
   const { t, language } = useLanguage();
 
   return (
     <>
+      <SEO
+        title={language === "ar" ? "من نحن" : "About Us"}
+        description={
+          language === "ar"
+            ? "نفذ للخدمات اللوجستية شركة سعودية متخصصة في تقديم حلول لوجستية وسلاسل إمداد متكاملة، تأسست بهدف تلبية الاحتياجات المتنامية لقطاع اللوجستيات في المملكة العربية السعودية ودول الخليج العربي."
+            : "NFZ Logistics is a Saudi-based company specializing in integrated logistics and supply chain solutions, founded to meet the growing needs of the logistics sector in Saudi Arabia and the GCC."
+        }
+      />
       {/* Hero */}
       <section className="bg-navy-900 pt-32 pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{backgroundImage: "url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1400&fit=crop')", backgroundSize: "cover"}} />
@@ -80,7 +75,7 @@ export default function About() {
             <h2 className="text-3xl font-bold text-navy-900 mb-4">{t("about.values")}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {VALUES.map((v) => {
+            {values.map((v) => {
               const Icon = v.icon;
               return (
                 <div key={v.titleEn} className="bg-gray-50 rounded-xl p-6 hover:bg-navy-900 group transition-all duration-300">
@@ -109,14 +104,14 @@ export default function About() {
             </h2>
           </div>
           <div className="max-w-3xl mx-auto space-y-6">
-            {MILESTONES.map((m, i) => (
+            {milestones.map((m, i) => (
               <div key={i} className="flex gap-6 items-start">
                 <div className="flex-shrink-0 w-16 text-right">
                   <span className="text-sgreen-400 font-bold">{language === "ar" ? m.yearAr : m.yearEn}</span>
                 </div>
                 <div className="flex-shrink-0 w-4 flex flex-col items-center">
                   <div className="w-3 h-3 bg-sgreen-600 rounded-full mt-1" />
-                  {i < MILESTONES.length - 1 && <div className="w-0.5 h-12 bg-sgreen-600/20 mt-1" />}
+                  {i < milestones.length - 1 && <div className="w-0.5 h-12 bg-sgreen-600/20 mt-1" />}
                 </div>
                 <div className="flex-1 bg-white/5 rounded-xl p-4">
                   <p className="text-white/80">{language === "ar" ? m.textAr : m.textEn}</p>

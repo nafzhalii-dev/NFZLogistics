@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SEO from "@/components/seo/SEO";
 import CTASection from "@/components/features/CTASection";
+import { company } from "@/config/company";
 
 const FAQS = [
   {
@@ -60,6 +62,7 @@ export default function FAQ() {
 
   return (
     <>
+      <SEO title={t("faq.title")} description={t("faq.subtitle")} />
       <section className="bg-navy-900 pt-32 pb-16">
         <div className="container-custom text-center">
           <div className="w-14 h-14 bg-sgreen-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
@@ -78,6 +81,8 @@ export default function FAQ() {
                 <button
                   className="w-full text-start px-6 py-5 flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors"
                   onClick={() => setOpen(open === i ? null : i)}
+                  aria-expanded={open === i}
+                  aria-controls={`faq-panel-${i}`}
                 >
                   <span className="font-semibold text-navy-900 text-base">{language === "ar" ? faq.qAr : faq.qEn}</span>
                   {open === i
@@ -85,7 +90,7 @@ export default function FAQ() {
                     : <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />}
                 </button>
                 {open === i && (
-                  <div className="px-6 pb-6 border-t border-gray-100">
+                  <div id={`faq-panel-${i}`} role="region" className="px-6 pb-6 border-t border-gray-100">
                     <p className="text-gray-600 leading-relaxed pt-4">{language === "ar" ? faq.aAr : faq.aEn}</p>
                   </div>
                 )}
@@ -101,10 +106,10 @@ export default function FAQ() {
               {language === "ar" ? "فريقنا جاهز للمساعدة في أي وقت" : "Our team is ready to help at any time"}
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <a href="tel:+966501234567" className="btn-primary text-sm px-5 py-2.5">
+              <a href={company.phoneHref} className="btn-primary text-sm px-5 py-2.5">
                 {language === "ar" ? "اتصل بنا" : "Call Us"}
               </a>
-              <a href="https://wa.me/966501234567" target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#20bc5a] text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all inline-flex items-center gap-2">
+              <a href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] hover:bg-[#20bc5a] text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all inline-flex items-center gap-2">
                 WhatsApp
               </a>
             </div>
